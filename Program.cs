@@ -12,7 +12,8 @@ namespace test
             Player enemy = new Player();
 
             var writer = File.AppendText("combatlog.txt");
-            string combatLog = "";
+            string[] combatLog = new string[50];
+            Array.Fill(combatLog,"NA,");
 
             string weapon = "";
             Boolean flag = false;
@@ -23,33 +24,39 @@ namespace test
 
             //newPlayer.AddWeapon(weapon);
             newPlayer.AddRandomWeapon();
-            combatLog += newPlayer.Weapon.Name + ",";
+            combatLog[0] = newPlayer.Weapon.Name + ",";
 
             Console.WriteLine("The enemy will now choose his weapon.");
             enemy.AddRandomWeapon();
-            combatLog += enemy.Weapon.Name + ",";
+            combatLog[1] = enemy.Weapon.Name + ",";
+
+            bool firstTurn = DecideStartingPlayer();
+            bool turn = firstTurn;
             
-            EngageinCombat(newPlayer, enemy, ref combatLog, ref flag);
+            EngageinCombat(newPlayer, enemy, turn, firstTurn, ref combatLog);
 
             if (newPlayer.Health <= 0) { Console.WriteLine("The enemy has won!"); }
             else { Console.WriteLine("You have won!"); }
 
-            writer.WriteLine(combatLog, "combatlog.txt");
+            string combinedString = string.Join("",combatLog);
+            writer.WriteLine(combinedString, "combatlog.txt");
             writer.Close();
 
         }
 
-        private static void EngageinCombat(Player newPlayer, Player enemy, ref string combatLog, ref bool flag)
+        private static void EngageinCombat(Player newPlayer, Player enemy, bool turn, bool firstTurn, ref string[] combatLog)
         {
             Combat combat = new Combat();
-            Boolean turn = true;
+            int i = 2;
 
             while (newPlayer.Health > 0 && enemy.Health > 0)
             {
-                combatLog += combat.CombatRound(newPlayer, enemy, turn);
+                combat.CombatRound(newPlayer, enemy, turn, firstTurn, ref combatLog, i);
                 turn = !turn;
+                i += 1;
                 if (newPlayer.Health > 0 && enemy.Health > 0)
                 {
+                    var flag = false;
                     //CombatBreak(ref flag);
                 }
             }
@@ -109,6 +116,22 @@ namespace test
             }
 
             flag = false;
+        }
+    
+        private static bool DecideStartingPlayer() 
+        {
+            Random rnd = new Random();
+            int r = rnd.Next(99);
+            if (r < 50) 
+            { 
+                Console.WriteLine("Player will go first!");
+                return true; 
+            }
+            else 
+            { 
+                Console.WriteLine("Enemy will go first");
+                return false; 
+            }
         }
     }
 }
